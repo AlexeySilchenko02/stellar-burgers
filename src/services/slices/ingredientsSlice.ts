@@ -2,30 +2,41 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getIngredientsApi } from '../../utils/burger-api';
 import { TIngredient } from '../../utils/types';
 
+/* -------------------------------------------------------------------------- */
+/*                                   State                                    */
+/* -------------------------------------------------------------------------- */
+
 type TIngredientsState = {
   items: TIngredient[];
   isLoading: boolean;
-  hasError: boolean;
+  error: string | null;
 };
 
 const initialState: TIngredientsState = {
   items: [],
   isLoading: false,
-  hasError: false
+  error: null
 };
 
-// Асинхронная Thunk-функция для загрузки ингредиентов с сервера
-export const fetchIngredients = createAsyncThunk<TIngredient[], void>(
-  'ingredients/fetchIngredients',
-  async (_, { rejectWithValue }) => {
-    try {
-      const data = await getIngredientsApi();
-      return data; // возвращаем список ингредиентов
-    } catch (error) {
-      return rejectWithValue(error);
-    }
+/* -------------------------------------------------------------------------- */
+/*                                   Thunk                                    */
+/* -------------------------------------------------------------------------- */
+
+export const fetchIngredients = createAsyncThunk<
+  TIngredient[],
+  void,
+  { rejectValue: string }
+>('ingredients/fetchIngredients', async (_, { rejectWithValue }) => {
+  try {
+    return await getIngredientsApi();
+  } catch (err: any) {
+    return rejectWithValue(err?.message || 'Не удалось загрузить ингредиенты');
   }
-);
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                   Slice                                    */
+/* -------------------------------------------------------------------------- */
 
 const ingredientsSlice = createSlice({
   name: 'ingredients',
@@ -33,23 +44,20 @@ const ingredientsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // pending
       .addCase(fetchIngredients.pending, (state) => {
         state.isLoading = true;
-        state.hasError = false;
+        state.error = null;
       })
-      // fulfilled
       .addCase(fetchIngredients.fulfilled, (state, action) => {
         state.isLoading = false;
         state.items = action.payload;
+        state.error = null;
       })
-      // rejected
-      .addCase(fetchIngredients.rejected, (state) => {
+      .addCase(fetchIngredients.rejected, (state, action) => {
         state.isLoading = false;
-        state.hasError = true;
+        state.error = action.payload || 'Неизвестная ошибка';
       });
   }
 });
 
-// Экспортируем сам редьюсер по умолчанию
 export default ingredientsSlice.reducer;

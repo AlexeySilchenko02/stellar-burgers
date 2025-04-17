@@ -4,9 +4,10 @@ import { useInView } from 'react-intersection-observer';
 import { useSelector } from '../../services/store';
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
+import { Preloader } from '@ui';
 
 export const BurgerIngredients: FC = () => {
-  const { items } = useSelector((state) => state.ingredients);
+  const { items, isLoading, error } = useSelector((state) => state.ingredients);
 
   const buns = items.filter((item) => item.type === 'bun');
   const mains = items.filter((item) => item.type === 'main');
@@ -50,18 +51,26 @@ export const BurgerIngredients: FC = () => {
   };
 
   return (
-    <BurgerIngredientsUI
-      currentTab={currentTab}
-      buns={buns}
-      mains={mains}
-      sauces={sauces}
-      titleBunRef={titleBunRef}
-      titleMainRef={titleMainRef}
-      titleSaucesRef={titleSaucesRef}
-      bunsRef={bunsRef}
-      mainsRef={mainsRef}
-      saucesRef={saucesRef}
-      onTabClick={onTabClick}
-    />
+    <>
+      {isLoading ? (
+        <Preloader />
+      ) : error ? (
+        <p>При загрузке данных произошла ошибка</p>
+      ) : (
+        <BurgerIngredientsUI
+          currentTab={currentTab}
+          buns={buns}
+          mains={mains}
+          sauces={sauces}
+          titleBunRef={titleBunRef}
+          titleMainRef={titleMainRef}
+          titleSaucesRef={titleSaucesRef}
+          bunsRef={bunsRef}
+          mainsRef={mainsRef}
+          saucesRef={saucesRef}
+          onTabClick={onTabClick}
+        />
+      )}
+    </>
   );
 };

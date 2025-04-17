@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { ReactElement } from 'react';
+import { useSelector } from '../../services/store';
 
 interface ProtectedRouteProps {
   children: ReactElement;
@@ -10,7 +11,7 @@ export const ProtectedRoute = ({
   children,
   onlyUnAuth = false
 }: ProtectedRouteProps) => {
-  const isAuthenticated = false;
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const location = useLocation();
 
   if (onlyUnAuth && isAuthenticated) {

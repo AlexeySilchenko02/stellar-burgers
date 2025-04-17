@@ -21,7 +21,7 @@ import { ProtectedRoute } from '../protected-route';
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const background = location.state?.backgroundLocation; // bg для отображения модальных окон
+  const background = location.state?.background;
 
   return (
     <div className={styles.app}>
