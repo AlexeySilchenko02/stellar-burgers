@@ -1,5 +1,5 @@
 import { FC, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from '../../services/store';
 
 import { BurgerConstructorUI } from '@ui';
@@ -11,15 +11,17 @@ import { getCookie } from '../../utils/cookie';
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const constructorItems = useSelector((state) => state.burgerConstructor);
   const { order, orderRequest } = useSelector((state) => state.order);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const onOrderClick = () => {
     if (!constructorItems.bun || orderRequest) return;
 
-    if (!getCookie('accessToken')) {
-      navigate('/login');
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location } });
       return;
     }
 
