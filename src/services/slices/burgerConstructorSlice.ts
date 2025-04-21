@@ -1,49 +1,42 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TIngredient } from '../../utils/types';
-import { v4 as uuidv4 } from 'uuid';
+import { TConstructorIngredient, TIngredient } from '@utils-types';
+import { v4 as uuid } from 'uuid';
 
-/* -------------------------------------------------------------------------- */
-/*                      Тип ингредиента внутри конструктора                   */
-/* -------------------------------------------------------------------------- */
-
-export type TConstructorIngredient = TIngredient & { uuid: string };
-
-/* -------------------------------------------------------------------------- */
-/*                                   State                                    */
-/* -------------------------------------------------------------------------- */
-
-type TConstructorState = {
-  bun: TIngredient | null;
+interface TBurgerConstructorState {
+  bun: TConstructorIngredient | null;
   ingredients: TConstructorIngredient[];
-};
+}
 
-const initialState: TConstructorState = {
+const initialState: TBurgerConstructorState = {
   bun: null,
   ingredients: []
 };
-
-/* -------------------------------------------------------------------------- */
-/*                                   Slice                                    */
-/* -------------------------------------------------------------------------- */
 
 const burgerConstructorSlice = createSlice({
   name: 'burgerConstructor',
   initialState,
   reducers: {
-    setBun: (state, action: PayloadAction<TIngredient>) => {
-      state.bun = action.payload;
+    setBun: {
+      reducer(state, action: PayloadAction<TConstructorIngredient>) {
+        state.bun = action.payload;
+      },
+      prepare(ingredient: TIngredient) {
+        return { payload: { ...ingredient, id: uuid() } };
+      }
     },
 
-    addIngredient: (state, action: PayloadAction<TIngredient>) => {
-      state.ingredients.push({
-        ...action.payload,
-        uuid: uuidv4()
-      });
+    addIngredient: {
+      reducer(state, action: PayloadAction<TConstructorIngredient>) {
+        state.ingredients.push(action.payload);
+      },
+      prepare(ingredient: TIngredient) {
+        return { payload: { ...ingredient, id: uuid() } };
+      }
     },
 
     removeIngredient: (state, action: PayloadAction<string>) => {
       state.ingredients = state.ingredients.filter(
-        (item) => item.uuid !== action.payload
+        (item) => item.id !== action.payload
       );
     },
 
@@ -52,18 +45,18 @@ const burgerConstructorSlice = createSlice({
       action: PayloadAction<{ fromIndex: number; toIndex: number }>
     ) => {
       const { fromIndex, toIndex } = action.payload;
-      const dragged = state.ingredients[fromIndex];
-      state.ingredients.splice(fromIndex, 1);
-      state.ingredients.splice(toIndex, 0, dragged);
+      const updated = [...state.ingredients];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      state.ingredients = updated;
     },
 
-    clearConstructor: () => initialState
+    clearConstructor: (state) => {
+      state.bun = null;
+      state.ingredients = [];
+    }
   }
 });
-
-/* -------------------------------------------------------------------------- */
-/*                                   Export                                   */
-/* -------------------------------------------------------------------------- */
 
 export const {
   setBun,
